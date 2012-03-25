@@ -1,0 +1,147 @@
+<script>
+<!--
+Array.prototype.reset=function() 
+{
+    this.swap_count = 0;
+    this.cmp_count = 0;
+}
+Array.prototype.swap=function(a, b)
+{
+    this.swap_count++;
+    var tmp=this[a];
+    this[a]=this[b];
+    this[b]=tmp;
+}
+Array.prototype.less=function(a, b) 
+{
+    this.cmp_count++;
+    return this[a] < this[b];
+}
+Array.prototype.greater=function(a, b) 
+{
+    this.cmp_count++;
+    return this[a] > this[b];
+}
+Array.prototype.equal=function(a, b) 
+{
+    this.cmp_count++;
+    return this[a] == this[b];
+}
+Array.prototype.stats=function()
+{
+    console.log("Compares", this.cmp_count, " Swaps ", this.swap_count);
+}
+
+function isort(arr)
+{
+    var n = arr.length;
+    for (var i = 1; i < n; i++)
+    {
+        for (var j = i; j > 1; j--)
+        {
+            if (arr.greater(j-1, j))
+                arr.swap(j-1, j);
+            else break;
+        }
+    }
+    return arr;
+}
+
+function ssort(arr)
+{
+    var n = arr.length;
+    for (var i = 0; i < (n-1); i++)
+    {
+        var min = i;
+        for (var j = i+1; j <= n; j++)
+        {
+            if (arr.greater(min, j))
+                min = j;
+        }
+        if (min != i)
+            arr.swap(i, min);
+    }
+    return arr;
+}
+
+function bsort(arr)
+{
+    var n = arr.length;
+    do
+    {
+        var swapped = false;
+        for (var i = 1; i < n; i++)
+        {
+            if (arr.greater(i-1, i)) 
+            {
+                arr.swap(i-1, i);
+                swapped = true;
+            }
+        }
+    } while (swapped);
+    return arr;
+}
+
+function qsort(arr)
+{
+    var n = arr.length;
+ 
+    var qs = function (l, r) {
+        var i = l,
+            j = r,
+            x = Math.floor(Math.random()*(r-l+1))+l;
+            // x = l; // Если нет желания использовать объект Math
+ 
+        while(i <= j) {
+            while(arr.less(i, x)) {i++;}
+            while(arr.greater(j, x)) {j--;}
+            if(i <= j) {arr.swap(i++, j--);}
+        };
+        if(l < j) {qs(l, j);}
+        if(i < r) {qs(i, r);}
+    };
+ 
+    qs(0, arr.length-1);
+    return arr;
+}
+
+function generate(count, max) 
+{
+    var arr = [];
+    for (var i = 0; i < count; i++) {
+        arr[i] = Math.round(Math.random()*max);
+    }
+    return arr;
+}
+
+function bench(count)
+{
+    var max = 10000;
+    console.log(" ========================================================= ");
+    console.log("Run bench: count ", count);
+    var backup_arr = generate(count, max);
+    var sorted_arr = backup_arr.slice(0);
+    sorted_arr.sort();
+    var funs = [ssort, isort, qsort, bsort];
+    for (var f = 0; f < funs.length; f++) 
+    {
+        console.log(funs[f].name);
+        var arr = backup_arr.slice(0);
+
+        arr.reset();
+        (funs[f])(arr);
+        arr.stats();
+
+        sorted_arr.reset();
+        (funs[f])(sorted_arr);
+        sorted_arr.stats();
+    }
+}
+
+bench(10);
+bench(50);
+bench(500);
+bench(1000);
+
+-->
+</script>
