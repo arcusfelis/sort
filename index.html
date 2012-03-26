@@ -123,9 +123,11 @@ function bench(count)
     var sorted_arr = backup_arr.slice(0);
     sorted_arr.sort();
     var funs = [ssort, isort, qsort, bsort];
+    var stats = [];
     for (var f = 0; f < funs.length; f++) 
     {
-        console.log(funs[f].name);
+        var name = funs[f].name;
+        console.log(name);
         var arr = backup_arr.slice(0);
 
         arr.reset();
@@ -135,13 +137,58 @@ function bench(count)
         sorted_arr.reset();
         (funs[f])(sorted_arr);
         sorted_arr.stats();
+
+        stats[f] = {'name' : name, 
+                    'random' : {'cmp': arr.cmp_count, 'swap': arr.swap_count}, 
+                    'sorted' : {'cmp' : sorted_arr.cmp_count, 
+                                'swap' : sorted_arr.swap_count}};
     }
+    return stats;
 }
 
-bench(10);
-bench(50);
-bench(500);
-bench(1000);
+var results = [];
+results[10] = bench(10);
+results[50] = bench(50);
+results[500] = bench(500);
+results[1000] = bench(1000);
+console.dir(results);
+
+document.write("<table border=1>");
+        document.write("<tr>"
+            + "<td>count</td>" 
+            + "<td>name</td>" 
+            + "<td colspan=2>random</td>"
+            + "<td colspan=2>sorted</td>"
+            + "</tr>");
+        document.write("<tr>"
+            + "<td>count</td>" 
+            + "<td>name</td>" 
+            + "<td>cmp</td>"
+            + "<td>swap</td>"
+            + "<td>cmp</td>"
+            + "<td>swap</td>"
+            + "</tr>");
+for (var count in results)
+{
+    if (isNaN(count)) 
+        continue;
+    var r = results[count];
+    for (var idx in r)
+    {
+        if (isNaN(idx)) 
+            continue;
+        var m = r[idx];
+        document.write("<tr>"
+            + "<td>" + count + "</td>" 
+            + "<td>" + m.name + "</td>" 
+            + "<td>" + m.random.cmp + "</td>"
+            + "<td>" + m.random.swap + "</td>"
+            + "<td>" + m.sorted.cmp + "</td>"
+            + "<td>" + m.sorted.swap + "</td>"
+            + "</tr>");
+    }
+}
+document.write("</table>");
 
 -->
 </script>

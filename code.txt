@@ -1,0 +1,250 @@
+./bench.erl:1:-module(bench).
+./bench.erl:2:-export([bench/0]).
+./bench.erl:3:
+./bench.erl:4:bench() ->
+./bench.erl:5:    [ bench(N) || N <- [500, 10, 100] ].
+./bench.erl:6:
+./bench.erl:7:
+./bench.erl:8:bench(N) ->
+./bench.erl:9:    io:format("~2nNumber of elements: ~B~n", [N]),
+./bench.erl:10:    Max = 10000,
+./bench.erl:11:    Data = data:generate(N, Max),
+./bench.erl:12:    SData = lists:sort(Data),
+./bench.erl:13:    Funs = [ fun lists:sort/1
+./bench.erl:14:           , fun bsort:sort/1
+./bench.erl:15:           , fun qsort:qsort1/1
+./bench.erl:16:           , fun qsort:qsort2/1
+./bench.erl:17:           , fun qsort:qsort3/1
+./bench.erl:18:           , fun qsort:qsort4/1
+./bench.erl:19:           , fun isort:sort/1
+./bench.erl:20:           , fun isort2:sort/1
+./bench.erl:21:           , fun ssort:sort/1
+./bench.erl:22:           , fun ssort2:sort/1
+./bench.erl:23:           ],
+./bench.erl:25:    measure(Data, SData),
+./bench.erl:26:    measure2(Data, SData),
+./bench.erl:27:    M1 = measure(Data, SData),
+./bench.erl:28:    M2 = measure2(Data, SData),
+./bench.erl:29:    Cases = [M1, M2],
+./bench.erl:30:    [ C(F) || C <- Cases, F <- Funs ].
+./bench.erl:31:
+./bench.erl:32:
+./bench.erl:33:measure(Data, SData) ->
+./bench.erl:34:    fun(F) ->
+./bench.erl:35:        Time = time(F, Data),
+./bench.erl:36:        STime = time(F, SData),
+./bench.erl:37:        io:format("Sort ~-25s: T1=~17B T2=~17B~n", 
+./bench.erl:38:            [io_lib:write(F), Time, STime])
+./bench.erl:39:    end.
+./bench.erl:40:
+./bench.erl:41:
+./bench.erl:42:measure2(Data, SData) ->
+./bench.erl:43:    Idol = fun lists:sort/1,
+./bench.erl:44:    IdolTime  = time(Idol, Data),
+./bench.erl:45:    IdolSTime = time(Idol, SData),
+./bench.erl:46:    fun(F) ->
+./bench.erl:47:        Time  = time(F, Data) / IdolTime,
+./bench.erl:48:        STime = time(F, SData) / IdolSTime,
+./bench.erl:49:        io:format("Sort ~-25s: T1/I=~15f T2/I=~15f~n", 
+./bench.erl:50:            [io_lib:write(F), Time, STime])
+./bench.erl:51:    end.
+./bench.erl:52:
+./bench.erl:53:
+./bench.erl:54:avg(L) -> erlang:round(lists:sum(L) / string:len(L)).
+./bench.erl:55:
+./bench.erl:56:
+./bench.erl:57:time(F, Data) -> 
+./bench.erl:58:    [_, _|T] = cycle(12, time_hof(F, Data)),
+./bench.erl:59:    avg(T).
+./bench.erl:60:
+./bench.erl:61:
+./bench.erl:62:time_hof(F, Data) -> 
+./bench.erl:63:    fun() ->
+./bench.erl:64:        {Time, _Res} = timer:tc(fun() -> F(Data) end), 
+./bench.erl:65:        Time
+./bench.erl:66:    end.
+./bench.erl:67:
+./bench.erl:68:
+./bench.erl:69:cycle(N, F) -> cycle(N, F, []).
+./bench.erl:70:
+./bench.erl:71:cycle(0, _, Acc) -> Acc;
+./bench.erl:72:cycle(N, F, Acc) -> cycle(N-1, F, [F()|Acc]).
+./bsort.erl:25:
+./bsort.erl:26:-module(bsort).
+./bsort.erl:27:-export([sort/1]).
+./bsort.erl:28:-import(lists, [reverse/1]).
+./bsort.erl:29:
+./bsort.erl:30:sort(L) -> sort(L, [], true).
+./bsort.erl:31:
+./bsort.erl:32:sort([], L, true) -> reverse(L);
+./bsort.erl:33:
+./bsort.erl:34:sort([], L, false) -> sort(reverse(L), [], true);
+./bsort.erl:35:
+./bsort.erl:36:sort([ X, Y | T ], L, _) when X > Y ->
+./bsort.erl:37:    sort([ X | T ], [ Y | L ], false);
+./bsort.erl:38:
+./bsort.erl:39:sort([ X | T ], L, Halt) -> sort(T, [ X | L ], Halt).
+./data.erl:1:-module(data).
+./data.erl:2:-export([generate/2]).
+./data.erl:3:
+./data.erl:4:generate(0, _) -> [];
+./data.erl:5:generate(Cnt, Max) -> [random:uniform(Max) | generate(Cnt-1, Max)].
+./isort2.erl:25:
+./isort2.erl:26:-module(isort2).
+./isort2.erl:27:-export([sort/1]).
+./isort2.erl:28:
+./isort2.erl:29:sort(List) when is_list(List) ->
+./isort2.erl:30:    sort(List, [], []).
+./isort2.erl:31:
+./isort2.erl:32:sort([], Acc, _) ->
+./isort2.erl:33:    lists:reverse(Acc);
+./isort2.erl:34:
+./isort2.erl:35:sort(List = [X | _], [Y | AccT], Temp) when X < Y ->
+./isort2.erl:36:    sort(List, AccT, [Y | Temp]);
+./isort2.erl:37:
+./isort2.erl:38:sort([X | T], Acc, Temp) ->
+./isort2.erl:39:    sort(T, lists:reverse(Temp) ++ [X | Acc], []).
+./isort2.erl:40:
+./isort.erl:25:
+./isort.erl:27:-module(isort).
+./isort.erl:28:-export([sort/1]).
+./isort.erl:29:
+./isort.erl:30:sort(List) when is_list(List) ->
+./isort.erl:31:    sort(List, []).
+./isort.erl:32:
+./isort.erl:33:sort([H | T], Acc) ->
+./isort.erl:34:    sort(T, insert(H, Acc, []));
+./isort.erl:35:
+./isort.erl:36:sort([], Acc) ->
+./isort.erl:37:    Acc.
+./isort.erl:38:
+./isort.erl:39:insert(Elem, [H | T], Acc) when Elem >= H ->
+./isort.erl:40:    insert(Elem, T, [H | Acc]);
+./isort.erl:41:
+./isort.erl:42:insert(Elem, List, Acc) ->
+./isort.erl:43:    lists:reverse(Acc) ++ [Elem | List].
+./isort.erl:44:
+./isort.erl:45:
+./qsort.erl:25:
+./qsort.erl:26:-module(qsort).
+./qsort.erl:27:-export([qsort1/1, qsort2/1, qsort3/1, qsort4/1]).
+./qsort.erl:28:
+./qsort.erl:29:qsort1([]) ->
+./qsort.erl:30:    [];
+./qsort.erl:31:qsort1([H | T]) -> 
+./qsort.erl:32:    qsort1([ X || X <- T, X < H ]) ++ [H] ++ qsort1([ X || X <- T, X >= H ]).
+./qsort.erl:33:
+./qsort.erl:34:qsort2([]) ->
+./qsort.erl:35:    [];
+./qsort.erl:36:qsort2([H | T]) ->
+./qsort.erl:37:    {Less, Equal, Greater} = part(H, T, {[], [H], []}),
+./qsort.erl:38:    qsort2(Less) ++ Equal ++ qsort2(Greater).
+./qsort.erl:39:
+./qsort.erl:40:part(_, [], {L, E, G}) ->
+./qsort.erl:41:    {L, E, G};
+./qsort.erl:42:part(X, [H | T], {L, E, G}) ->
+./qsort.erl:43:    if
+./qsort.erl:44:        H < X ->
+./qsort.erl:45:            part(X, T, {[H | L], E, G});
+./qsort.erl:46:        H > X ->
+./qsort.erl:47:            part(X, T, {L, E, [H | G]});
+./qsort.erl:48:        true ->
+./qsort.erl:49:            part(X, T, {L, [H | E], G})
+./qsort.erl:50:    end.
+./qsort.erl:51:
+./qsort.erl:52:
+./qsort.erl:53:qsort3([]) ->
+./qsort.erl:54:    [];
+./qsort.erl:55:qsort3([H | T]) ->
+./qsort.erl:56:    qsort3_acc([H | T], []).
+./qsort.erl:57:
+./qsort.erl:58:qsort3_acc([], Acc) ->
+./qsort.erl:59:    Acc;
+./qsort.erl:60:
+./qsort.erl:61:qsort3_acc([H | T], Acc) ->
+./qsort.erl:62:    part_acc(H, T, {[], [H], []}, Acc).
+./qsort.erl:63:
+./qsort.erl:64:part_acc(_, [], {L, E, G}, Acc) ->
+./qsort.erl:65:    qsort3_acc(L, (E ++ qsort3_acc(G, Acc)));
+./qsort.erl:66:part_acc(X, [H | T], {L, E, G}, Acc) ->
+./qsort.erl:67:    if
+./qsort.erl:68:        H < X ->
+./qsort.erl:69:            part_acc(X, T, {[H | L], E, G}, Acc);
+./qsort.erl:70:        H > X ->
+./qsort.erl:71:            part_acc(X, T, {L, E, [H | G]}, Acc);
+./qsort.erl:72:        true ->
+./qsort.erl:73:            part_acc(X, T, {L, [H | E], G}, Acc)
+./qsort.erl:74:    end.
+./qsort.erl:75:
+./qsort.erl:76:
+./qsort.erl:77:
+./qsort.erl:78:
+./qsort.erl:79:qsort4([]) ->
+./qsort.erl:80:    [];
+./qsort.erl:81:qsort4([H | T]) ->
+./qsort.erl:82:    qsort4_acc([H | T], []).
+./qsort.erl:83:
+./qsort.erl:84:qsort4_acc([], Acc) ->
+./qsort.erl:85:    Acc;
+./qsort.erl:86:
+./qsort.erl:87:qsort4_acc([H | T], Acc) ->
+./qsort.erl:88:    qsort4_part_acc(H, T, [], [H], [], Acc).
+./qsort.erl:89:
+./qsort.erl:90:qsort4_part_acc(_, [], L, E, G, Acc) ->
+./qsort.erl:91:    qsort4_acc(L, (E ++ qsort4_acc(G, Acc)));
+./qsort.erl:92:qsort4_part_acc(X, [H | T], L, E, G, Acc) ->
+./qsort.erl:93:    if
+./qsort.erl:94:        H < X ->
+./qsort.erl:95:            qsort4_part_acc(X, T, [H | L], E, G, Acc);
+./qsort.erl:96:        H > X ->
+./qsort.erl:97:            qsort4_part_acc(X, T, L, E, [H | G], Acc);
+./qsort.erl:98:        true ->
+./qsort.erl:99:            qsort4_part_acc(X, T, L, [H | E], G, Acc)
+./qsort.erl:100:    end.
+./ssort2.erl:25:
+./ssort2.erl:26:-module(ssort2).
+./ssort2.erl:27:-export([sort/1, remove_min/1, remove_rmin/1]).
+./ssort2.erl:28:
+./ssort2.erl:29:sort(L) when is_list(L) -> sort(L, []).
+./ssort2.erl:30:
+./ssort2.erl:31:sort([], L) -> lists:reverse(L);
+./ssort2.erl:32:
+./ssort2.erl:33:sort(L, Sorted) ->
+./ssort2.erl:34:    {Min, Rest} = remove_min(L),
+./ssort2.erl:35:    sort(Rest, [Min | Sorted]).
+./ssort2.erl:36:
+./ssort2.erl:37:remove_min(L) ->
+./ssort2.erl:38:    {Min, Rest} = remove_rmin(lists:reverse(L)),
+./ssort2.erl:39:    {Min, lists:reverse(Rest)}.
+./ssort2.erl:40:
+./ssort2.erl:41:remove_rmin([H | T]) -> remove_rmin(T, H, []).
+./ssort2.erl:42:
+./ssort2.erl:43:remove_rmin([], Min, Rest) -> { Min, lists:reverse(Rest) };
+./ssort2.erl:44:
+./ssort2.erl:45:remove_rmin([H | T], Min, Rest) when H =< Min ->
+./ssort2.erl:46:    remove_rmin(T, H, [Min | Rest]);
+./ssort2.erl:47:
+./ssort2.erl:48:remove_rmin([H | T], Min, Rest) ->
+./ssort2.erl:49:    remove_rmin(T, Min, [H | Rest]).
+./ssort2.erl:50:
+./ssort.erl:25:
+./ssort.erl:26:-module(ssort).
+./ssort.erl:27:-export([sort/1]).
+./ssort.erl:28:
+./ssort.erl:29:sort(L) when is_list(L) -> sort(L, []).
+./ssort.erl:30:
+./ssort.erl:31:sort([], L) -> lists:reverse(L);
+./ssort.erl:32:
+./ssort.erl:33:sort(L, Sorted) ->
+./ssort.erl:34:    {Min, Rest} = remove_min(L),
+./ssort.erl:35:    sort(Rest, [Min | Sorted]).
+./ssort.erl:36:
+./ssort.erl:37:remove_min([H | T]) -> remove_min(T, H, []).
+./ssort.erl:38:
+./ssort.erl:39:remove_min([], Min, Rest) -> { Min, Rest };
+./ssort.erl:40:
+./ssort.erl:41:remove_min([H | T], Min, Rest) when H < Min ->
+./ssort.erl:42:    remove_min(T, H, [Min | Rest]);
+./ssort.erl:43:
+./ssort.erl:44:remove_min([H | T], Min, Rest) ->
+./ssort.erl:45:    remove_min(T, Min, [H | Rest]).
